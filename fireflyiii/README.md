@@ -1,7 +1,7 @@
 Firefly III
 Proxmox automated scripts by wizapol
 
-Este script genera un contenedor de ubuntu 23 e instala por docker compose Firefly III.
+Este script genera un contenedor de Alpine 3.18 e instala por docker compose Firefly III.
 
     #Sistema Operativo: Alpine 3.18.
     #Configuración de VM:
@@ -13,7 +13,6 @@ Corre este comando en la consola de Proxmox:
 
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/fireflyiii.sh)"
 
-Para ingresar a este aplicativo:
-ingresar a: "(IP_VM):8200"
+Para este aplicativo, ingresar a: "(IP_VM):8200"
 
 Atascate!
