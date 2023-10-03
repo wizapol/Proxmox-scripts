@@ -72,6 +72,14 @@ while true; do
   fi
 done
 
+# Confirmar puerto para Firefly III
+read -p "El puerto por defecto para Firefly III es 3200. ¿Desea cambiarlo? [y/N]: " yn
+if [[ "$yn" =~ ^[Yy]$ ]]; then
+  read -p "Introduzca el nuevo puerto para Firefly III: " NEW_PORT
+else
+  NEW_PORT=3200
+fi
+
 # Configuración de recursos de VM
 read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 512MB RAM)? [y/N]: " yn
 case $yn in
@@ -109,37 +117,6 @@ pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
   --memory $RAM \
   --storage local-lvm
 
-if [ $? -ne 0 ]; then
-  echo -e "${RED}Error al crear el contenedor. La imagen de Ubuntu no se encuentra disponible.${NC}"
-  read -p "¿Desea descargar la imagen de Ubuntu automáticamente? [y/N]: " yn
-  if [[ "$yn" =~ ^[Yy]$ ]]; then
-    echo "Descargando la imagen de Ubuntu..."
-    pveam download local ubuntu-23.04-standard_23.04-1_amd64.tar.zst
-    if [ $? -ne 0 ]; then
-      echo -e "${RED}Error al descargar la imagen de Ubuntu. Verifique la conexión a Internet y los repositorios.${NC}"
-      exit 1
-    else
-      echo -e "${GREEN}Imagen de Ubuntu descargada con éxito.${NC}"
-      # Intentar crear el contenedor de nuevo
-      pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
-        --hostname firefly-iii \
-        --password $PASSWORD \
-        --unprivileged 1 \
-        --net0 name=eth0,bridge=vmbr0,ip=$STATIC_IP \
-        --cores $CPU \
-        --memory $RAM \
-        --storage local-lvm
-      if [ $? -ne 0 ]; then
-        echo -e "${RED}Error al crear el contenedor incluso después de descargar la imagen de Ubuntu. Abortando.${NC}"
-        exit 1
-      fi
-    fi
-  else
-    echo -e "${RED}Abortando la instalación. Por favor, descargue la imagen de Ubuntu manualmente y vuelva a intentarlo.${NC}"
-    exit 1
-  fi
-fi
-
 # Habilitar el anidamiento para Docker
 pct set $VMID -features nesting=1
 
@@ -165,19 +142,12 @@ pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubuser
 # Modificar la contraseña de la base de datos en los archivos descargados
 pct exec $VMID -- bash -c "sed -i 's/firefly_password/$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"
 pct exec $VMID -- bash -c "sed -i 's/firefly_password/$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/.env"
-echo "inyectando nuevo password en los archivos descargados..."
+
+# Modificar el puerto en el archivo docker-compose.yml descargado
+pct exec $VMID -- bash -c "sed -i 's/8200:8080/$NEW_PORT:8080/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"
 
 # Iniciar Firefly III
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
-
-# Verificar que la contraseña de la base de datos se ha cambiado correctamente
-sleep 10  # Esperar a que el contenedor de la base de datos se inicie
-DB_VERIFICATION=$(pct exec $VMID -- bash -c "docker exec db mysql -ufirefly -p$DB_PASSWORD -e 'SHOW DATABASES;' 2>&1")
-if [[ "$DB_VERIFICATION" == *"Access denied"* ]]; then
-  echo -e "${RED}La verificación de la contraseña de la base de datos ha fallado.${NC}"
-else
-  echo -e "${GREEN}La verificación de la contraseña de la base de datos ha sido exitosa, la instalacion se ah completado correctamente${NC}"
-fi
 
 echo "-------------------------------------"
 echo "Resumen de la instalación:"
@@ -185,7 +155,7 @@ echo "ID del contenedor: $VMID"
 echo "CPU: $CPU"
 echo "RAM: ${RAM}MB"
 echo "IP estática: $STATIC_IP"
-echo "Puerto de Firefly III: 8200"
+echo "Puerto de Firefly III: $NEW_PORT"
 echo "Usuario de la base de datos: firefly"
 echo "Contraseña de la base de datos: $DB_PASSWORD"
 echo "-------------------------------------"
