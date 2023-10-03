@@ -21,7 +21,7 @@ services:
     environment:
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
       - MYSQL_USER=firefly
-      - MYSQL_PASSWORD=firefly_contraseña
+      - MYSQL_PASSWORD=firefly_password
       - MYSQL_DATABASE=firefly
     volumes:
       - ./firefly_db:/var/lib/mysql
