@@ -192,3 +192,17 @@ echo "Puerto: $NEW_PORT"
 echo "Usuario DB: firefly"
 echo "Contraseña DB: $DB_PASSWORD"
 echo "-------------------------------------"
+
+# Preguntar al usuario si el contenedor debe iniciar automáticamente
+read -p "¿Desea que el contenedor inicie automáticamente? [y/N]: " yn
+if [[ "$yn" =~ ^[Yy]$ ]]; then
+  echo "Configurando el contenedor para que inicie automáticamente..."
+  pct set $VMID -onboot 1
+  if [ $? -eq 0 ]; then
+    echo -e "${GREEN}Configuración de inicio automático actualizada con éxito.${NC}"
+  else
+    echo -e "${RED}No se pudo actualizar la configuración de inicio automático.${NC}"
+  fi
+else
+  echo "El contenedor no se configurará para iniciar automáticamente."
+fi
