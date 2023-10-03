@@ -103,7 +103,7 @@ sleep 10
 
 #actualiza Alpine
 echo "Actualizando OS..."
-pct exce $VMID -- sh -c "apk update && apk upgrade"
+pct exec $VMID -- sh -c "apk update && apk upgrade"
 
 # Instalar Docker
 echo "Instalando Docker..."
