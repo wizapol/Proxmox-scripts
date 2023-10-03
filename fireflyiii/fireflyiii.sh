@@ -8,15 +8,9 @@ NC='\033[0m' # No Color
 header_info() {
   clear
   echo -e "${GREEN}"
-  echo " _____ _          _____ _         ___ ___ ___  "
-  echo "|  ___(_)_ __ ___|  ___| |_   _  |_ _|_ _|_ _| "
-  echo "| |_  | | '__/ _ \\ |_  | | | | |  | | | | | |  "
-  echo "|  _| | | | |  __/  _| | | |_| |  | | | | | |  "
-  echo "|_|   |_|_|  \\___|_|   |_|\\__, | |___|___|___| "
-  echo "                          |___/                "
-  echo "-------------------------------------"
+  echo "----------------------------------------------------"
   echo "  Instalador de Firefly III en Proxmox by wizapol"
-  echo "-------------------------------------"
+  echo "----------------------------------------------------"
   echo -e "${NC}"
 }
 
@@ -102,15 +96,14 @@ sleep 10
 # Instalar Docker y Docker Compose
 pct exec $VMID -- sh -c "apk update && apk add docker docker-compose git"
 
-# Clonar el repositorio de Firefly III para obtener los archivos .env
-DOCKER_COMPOSE_DIR="/root/firefly"
-pct exec $VMID -- sh -c "git clone https://github.com/jmlcas/fireflyIII $DOCKER_COMPOSE_DIR"
+# Descargar el archivo docker-compose.yml de Firefly III
+echo "Descargando el archivo docker-compose.yml de Firefly III..."
+pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/docker-compose.yml"
 
-# Descargar el archivo docker-compose.yml de Firefly III (solo si no existe)
-if [ ! -f "$DOCKER_COMPOSE_DIR/docker-compose.yml" ]; then
-  echo "Descargando el archivo docker-compose.yml de Firefly III..."
-  pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/firefly-iii/docker/master/docker-compose.yml"
-fi
+# Descargar el archivo .env de Firefly III
+echo "Descargando el archivo docker-compose.yml de Firefly III..."
+pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/.env"
+
 
 # Iniciar Firefly III
 pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
