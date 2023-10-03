@@ -98,6 +98,14 @@ while true; do
   fi
 done
 
+# Confirmar puerto para Firefly III
+read -p "El puerto por defecto para Firefly III es 8200. ¿Desea cambiarlo? [y/N]: " yn
+if [[ "$yn" =~ ^[Yy]$ ]]; then
+  read -p "Introduzca el nuevo puerto para Firefly III: " NEW_PORT
+else
+  NEW_PORT=8200
+fi
+
 # Crear el contenedor en local-lvm
 echo "Creando el contenedor en local-lvm..."
 pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
@@ -140,13 +148,6 @@ if [ $? -ne 0 ]; then
   fi
 fi
 
-# Confirmar puerto para Firefly III
-read -p "El puerto por defecto para Firefly III es 8200. ¿Desea cambiarlo? [y/N]: " yn
-if [[ "$yn" =~ ^[Yy]$ ]]; then
-  read -p "Introduzca el nuevo puerto para Firefly III: " NEW_PORT
-else
-  NEW_PORT=8200
-fi
 # Habilitar el anidamiento para Docker
 pct set $VMID -features nesting=1
 
@@ -185,7 +186,12 @@ else
 fi
 
 # Modificar el puerto en el archivo docker-compose.yml descargado
-pct exec $VMID -- bash -c "sed -i 's/8200:8080/$NEW_PORT:8080/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"
+if pct exec $VMID -- bash -c "sed -i 's/8200:8080/$NEW_PORT:8080/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"; then
+  echo -e "${GREEN}Puerto actualizado con éxito en .env.${NC}"
+else
+  echo -e "${RED}Error al actualizar el puerto. Abortando.${NC}"
+  exit 1
+fi
 
 # Iniciar Firefly III
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
