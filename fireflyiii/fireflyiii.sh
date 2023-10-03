@@ -141,11 +141,11 @@ if [ $? -ne 0 ]; then
 fi
 
 # Confirmar puerto para Firefly III
-read -p "El puerto por defecto para Firefly III es 3200. ¿Desea cambiarlo? [y/N]: " yn
+read -p "El puerto por defecto para Firefly III es 8200. ¿Desea cambiarlo? [y/N]: " yn
 if [[ "$yn" =~ ^[Yy]$ ]]; then
   read -p "Introduzca el nuevo puerto para Firefly III: " NEW_PORT
 else
-  NEW_PORT=3200
+  NEW_PORT=8200
 fi
 # Habilitar el anidamiento para Docker
 pct set $VMID -features nesting=1
