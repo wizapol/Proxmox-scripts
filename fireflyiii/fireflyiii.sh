@@ -72,6 +72,32 @@ while true; do
   fi
 done
 
+# Configuración de recursos de VM
+read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 512MB RAM)? [y/N]: " yn
+case $yn in
+  [Yy]* ) CPU=1; RAM=512;;
+  * ) read -p "Introduzca el número de CPUs: " CPU; read -p "Introduzca la cantidad de RAM en MB: " RAM;;
+esac
+
+# Validación de IP estática
+while true; do
+  read -p "¿Desea configurar una IP estática? [y/N]: " yn
+  if [[ "$yn" =~ ^[Yy]$ ]]; then
+    read -p "Introduzca la IP estática (ejemplo: 192.168.1.2): " IP
+    read -p "Introduzca la máscara de red (ejemplo: 24): " NETMASK
+    read -p "Introduzca la puerta de enlace (ejemplo: 192.168.1.1): " GATEWAY
+    STATIC_IP="${IP}/${NETMASK},gw=${GATEWAY}"
+    if [[ "$STATIC_IP" =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+,gw=[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+      break
+    else
+      echo -e "${RED}Formato de IP estática incorrecto. Siga el formato indicado en los ejemplos.${NC}"
+    fi
+  else
+    STATIC_IP="dhcp"
+    break
+  fi
+done
+
 # Crear el contenedor en local-lvm
 echo "Creando el contenedor en local-lvm..."
 pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
@@ -113,7 +139,6 @@ pct exec $VMID -- bash -c "sed -i 's/firefly_password/$DB_PASSWORD/g' $DOCKER_CO
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
 
 # Verificar que la contraseña de la base de datos se ha cambiado correctamente
-# Aquí se asume que el contenedor de la base de datos se llama 'db' y que el usuario de la base de datos es 'firefly'
 sleep 30  # Esperar a que el contenedor de la base de datos se inicie
 DB_VERIFICATION=$(pct exec $VMID -- bash -c "docker exec db mysql -ufirefly -p$DB_PASSWORD -e 'SHOW DATABASES;' 2>&1")
 if [[ "$DB_VERIFICATION" == *"Access denied"* ]]; then
@@ -122,7 +147,6 @@ else
   echo -e "${GREEN}La verificación de la contraseña de la base de datos ha sido exitosa.${NC}"
 fi
 
-
 echo "-------------------------------------"
 echo "Resumen de la instalación:"
 echo "ID del contenedor: $VMID"
@@ -130,4 +154,6 @@ echo "CPU: $CPU"
 echo "RAM: ${RAM}MB"
 echo "IP estática: $STATIC_IP"
 echo "Puerto de Firefly III: 8200"
-echo "
+echo "Usuario de la base de datos: firefly"
+echo "Contraseña de la base de datos: $DB_PASSWORD"
+echo "-------------------------------------"
