@@ -43,8 +43,9 @@ esac
 # Inicialización de variables
 PASSWORD=""
 PASSWORD_CONFIRM=""
+DB_PASSWORD=""
 
-# Confirmar contraseña con validación
+# Confirmar contraseña para el contenedor
 while true; do
   read -s -p "Introduzca la contraseña para el contenedor: " PASSWORD
   echo ""
@@ -56,6 +57,10 @@ while true; do
     echo -e "${RED}Las contraseñas no coinciden. Inténtelo de nuevo.${NC}"
   fi
 done
+
+# Confirmar contraseña para la base de datos
+read -s -p "Introduzca la contraseña para la base de datos: " DB_PASSWORD
+echo ""
 
 # Configuración de recursos de VM
 read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 512MB RAM)? [y/N]: " yn
@@ -116,6 +121,10 @@ pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DI
 echo "Descargando el archivo .env de Firefly III..."
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/.env"
 
+# Modificar la contraseña de la base de datos en los archivos descargados
+pct exec $VMID -- bash -c "sed -i 's/firefly_password/$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"
+pct exec $VMID -- bash -c "sed -i 's/firefly_password/$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/.env"
+
 # Iniciar Firefly III
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
 
@@ -126,4 +135,6 @@ echo "CPU: $CPU"
 echo "RAM: ${RAM}MB"
 echo "IP estática: $STATIC_IP"
 echo "Puerto de Firefly III: 8200"
+echo "Usuario de la base de datos: firefly"
+echo "Contraseña de la base de datos: $DB_PASSWORD"
 echo "-------------------------------------"
