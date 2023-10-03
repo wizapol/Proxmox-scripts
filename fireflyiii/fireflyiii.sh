@@ -187,7 +187,7 @@ fi
 
 # Modificar el puerto en el archivo docker-compose.yml descargado
 if pct exec $VMID -- bash -c "sed -i 's/8200:8080/$NEW_PORT:8080/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"; then
-  echo -e "${GREEN}Puerto actualizado con éxito en .env.${NC}"
+  echo -e "${GREEN}Puerto actualizado con éxito en docker-compose.yml.${NC}"
 else
   echo -e "${RED}Error al actualizar el puerto. Abortando.${NC}"
   exit 1
