@@ -2,6 +2,7 @@
 
 # Colores para la salida
 GREEN='\033[0;32m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Función para mostrar el encabezado
@@ -39,6 +40,10 @@ case $yn in
   * ) read -p "Introduzca un ID de VM/CT: " VMID;;
 esac
 
+# Inicialización de variables
+PASSWORD=""
+PASSWORD_CONFIRM=""
+
 # Confirmar contraseña con validación
 while true; do
   read -s -p "Introduzca la contraseña para el contenedor: " PASSWORD
@@ -59,7 +64,7 @@ case $yn in
   * ) read -p "Introduzca el número de CPUs: " CPU; read -p "Introduzca la cantidad de RAM en MB: " RAM;;
 esac
 
-# Configuración de IP estática con validación
+# Validación de IP estática
 while true; do
   read -p "¿Desea configurar una IP estática? [y/N]: " yn
   if [[ "$yn" =~ ^[Yy]$ ]]; then
