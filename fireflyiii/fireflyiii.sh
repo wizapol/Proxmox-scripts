@@ -101,13 +101,9 @@ pct start $VMID
 # Esperar a que el contenedor se inicie completamente
 sleep 10
 
-#actualiza Alpine
-echo "Actualizando OS..."
-pct exec $VMID -- sh -c "apk update"
-
 # Instalar Docker
 echo "Instalando Docker..."
-pct exec $VMID -- sh -c "apk add docker"
+pct exec $VMID -- sh -c "apk update && apk add docker"
 
 # Iniciar el servicio de Docker
 echo "Iniciando el servicio de Docker..."
