@@ -101,9 +101,22 @@ pct start $VMID
 # Esperar a que el contenedor se inicie completamente
 sleep 10
 
-# Instalar Docker y Docker Compose
-echo "Instalando Docker y Docker Compose..."
-pct exec $VMID -- sh -c "apk update && apk add docker docker-compose git"
+#actualiza Alpine
+echo "Actualizando OS..."
+pct exce $VMID -- sh -c "apk update && apk upgrade"
+
+# Instalar Docker
+echo "Instalando Docker..."
+pct exec $VMID -- sh -c "apk add docker"
+
+# Iniciar el servicio de Docker
+echo "Iniciando el servicio de Docker..."
+pct exec $VMID -- sh -c "service docker start"
+
+# Instalar Docker Compose
+echo "Instalando Docker Compose..."
+pct exec $VMID -- sh -c "apk add py-pip python3-dev libffi-dev openssl-dev gcc libc-dev make && pip install docker-compose"
+
 
 # Descargar el archivo docker-compose.yml de Firefly III
 echo "Descargando el archivo docker-compose.yml de Firefly III..."
