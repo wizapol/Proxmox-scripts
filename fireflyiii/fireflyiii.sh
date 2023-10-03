@@ -72,14 +72,6 @@ while true; do
   fi
 done
 
-# Confirmar puerto para Firefly III
-read -p "El puerto por defecto para Firefly III es 3200. ¿Desea cambiarlo? [y/N]: " yn
-if [[ "$yn" =~ ^[Yy]$ ]]; then
-  read -p "Introduzca el nuevo puerto para Firefly III: " NEW_PORT
-else
-  NEW_PORT=3200
-fi
-
 # Configuración de recursos de VM
 read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 512MB RAM)? [y/N]: " yn
 case $yn in
@@ -117,6 +109,44 @@ pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
   --memory $RAM \
   --storage local-lvm
 
+if [ $? -ne 0 ]; then
+  echo -e "${RED}Error al crear el contenedor. La imagen de Ubuntu no se encuentra disponible.${NC}"
+  read -p "¿Desea descargar la imagen de Ubuntu automáticamente? [y/N]: " yn
+  if [[ "$yn" =~ ^[Yy]$ ]]; then
+    echo "Descargando la imagen de Ubuntu..."
+    pveam download local ubuntu-23.04-standard_23.04-1_amd64.tar.zst
+    if [ $? -ne 0 ]; then
+      echo -e "${RED}Error al descargar la imagen de Ubuntu. Verifique la conexión a Internet y los repositorios.${NC}"
+      exit 1
+    else
+      echo -e "${GREEN}Imagen de Ubuntu descargada con éxito.${NC}"
+      # Intentar crear el contenedor de nuevo
+      pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
+        --hostname firefly-iii \
+        --password $PASSWORD \
+        --unprivileged 1 \
+        --net0 name=eth0,bridge=vmbr0,ip=$STATIC_IP \
+        --cores $CPU \
+        --memory $RAM \
+        --storage local-lvm
+      if [ $? -ne 0 ]; then
+        echo -e "${RED}Error al crear el contenedor incluso después de descargar la imagen de Ubuntu. Abortando.${NC}"
+        exit 1
+      fi
+    fi
+  else
+    echo -e "${RED}Abortando la instalación. Por favor, descargue la imagen de Ubuntu manualmente y vuelva a intentarlo.${NC}"
+    exit 1
+  fi
+fi
+
+# Confirmar puerto para Firefly III
+read -p "El puerto por defecto para Firefly III es 3200. ¿Desea cambiarlo? [y/N]: " yn
+if [[ "$yn" =~ ^[Yy]$ ]]; then
+  read -p "Introduzca el nuevo puerto para Firefly III: " NEW_PORT
+else
+  NEW_PORT=3200
+fi
 # Habilitar el anidamiento para Docker
 pct set $VMID -features nesting=1
 
