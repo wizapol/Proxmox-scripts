@@ -103,16 +103,24 @@ sleep 10
 
 # Instalar Docker
 echo "Instalando Docker..."
-pct exec $VMID -- sh -c "apk update && apk add docker"
+if ! pct exec $VMID -- sh -c "apk update && apk add docker"; then
+  echo "Error al instalar Docker. Abortando."
+  exit 1
+fi
 
 # Iniciar el servicio de Docker
 echo "Iniciando el servicio de Docker..."
-pct exec $VMID -- sh -c "service docker start"
+if ! pct exec $VMID -- sh -c "rc-service docker start"; then
+  echo "Error al iniciar el servicio de Docker. Abortando."
+  exit 1
+fi
 
-# Instalar Docker Compose
+# Instalar Docker Compose mediante descarga directa
 echo "Instalando Docker Compose..."
-pct exec $VMID -- sh -c "apk add py-pip python3-dev libffi-dev openssl-dev gcc libc-dev make && pip install docker-compose"
-
+if ! pct exec $VMID -- sh -c "curl -L 'https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)' -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose"; then
+  echo "Error al instalar Docker Compose. Abortando."
+  exit 1
+fi
 
 # Descargar el archivo docker-compose.yml de Firefly III
 echo "Descargando el archivo docker-compose.yml de Firefly III..."
