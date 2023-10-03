@@ -170,9 +170,19 @@ echo "Descargando el archivo .env de Firefly III..."
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/.env"
 
 # Modificar la contraseña de la base de datos en los archivos descargados
-pct exec $VMID -- bash -c "sed -i 's/MYSQL_PASSWORD=firefly_contraseña/MYSQL_PASSWORD=$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/.env"
-pct exec $VMID -- bash -c "sed -i 's/firefly_contraseña/$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"
+if pct exec $VMID -- bash -c "sed -i 's/firefly_password/$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"; then
+  echo -e "${GREEN}Contraseña actualizada con éxito en docker-compose.yml.${NC}"
+else
+  echo -e "${RED}Error al actualizar la contraseña en docker-compose.yml. Abortando.${NC}"
+  exit 1
+fi
 
+if pct exec $VMID -- bash -c "sed -i 's/firefly_password/$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/.env"; then
+  echo -e "${GREEN}Contraseña actualizada con éxito en .env.${NC}"
+else
+  echo -e "${RED}Error al actualizar la contraseña en .env. Abortando.${NC}"
+  exit 1
+fi
 
 # Modificar el puerto en el archivo docker-compose.yml descargado
 pct exec $VMID -- bash -c "sed -i 's/8200:8080/$NEW_PORT:8080/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"
