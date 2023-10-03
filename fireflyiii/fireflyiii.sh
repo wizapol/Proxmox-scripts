@@ -185,6 +185,7 @@ pct set $VMID -tags "administracion"
 
 # Construir el resumen de la instalación
 RESUMEN="Resumen de la instalación: "
+RESUMEN+="Firefly III, "
 RESUMEN+="ID del contenedor: $VMID, "
 RESUMEN+="OS: Ubuntu 23.04, "
 RESUMEN+="CPU: $CPU, "
