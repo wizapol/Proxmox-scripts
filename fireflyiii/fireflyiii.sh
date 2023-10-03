@@ -1,33 +1,31 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Colores para la salida
 GREEN='\033[0;32m'
-RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Función para mostrar el encabezado
-header_info() {
+function header_info {
   clear
   echo -e "${GREEN}"
-  echo "----------------------------------------------------"
+  echo " _____ _          _____ _         ___ ___ ___  "
+  echo "|  ___(_)_ __ ___|  ___| |_   _  |_ _|_ _|_ _| "
+  echo "| |_  | | '__/ _ \\ |_  | | | | |  | | | | | |  "
+  echo "|  _| | | | |  __/  _| | | |_| |  | | | | | |  "
+  echo "|_|   |_|_|  \\___|_|   |_|\\__, | |___|___|___| "
+  echo "                          |___/                "
+  echo "---------------------------------------------------"
   echo "  Instalador de Firefly III en Proxmox by wizapol"
-  echo "----------------------------------------------------"
+  echo "---------------------------------------------------"
   echo -e "${NC}"
 }
 
 header_info
 
 # Comprobar si el usuario es root
-if [ "$(id -u)" -ne 0 ]; then
+if [[ $EUID -ne 0 ]]; then
   echo "Este script debe ser ejecutado como root"
   exit 1
-fi
-
-# Verificar si la plantilla de Alpine existe
-TEMPLATE_PATH="/var/lib/vz/template/cache/alpine-3.18-default_20230607_amd64.tar.xz"
-if [ ! -f "$TEMPLATE_PATH" ]; then
-  echo -e "${RED}La plantilla de Alpine no se encuentra. Descargando...${NC}"
-  # Aquí puedes agregar el comando para descargar la plantilla de Alpine
 fi
 
 # Obtener el próximo ID de VM/CT
@@ -47,7 +45,7 @@ while true; do
   echo ""
   read -s -p "Confirme la contraseña: " PASSWORD_CONFIRM
   echo ""
-  if [ "$PASSWORD" = "$PASSWORD_CONFIRM" ]; then
+  if [ "$PASSWORD" == "$PASSWORD_CONFIRM" ]; then
     break
   else
     echo -e "${RED}Las contraseñas no coinciden. Inténtelo de nuevo.${NC}"
@@ -64,12 +62,12 @@ esac
 # Configuración de IP estática con validación
 while true; do
   read -p "¿Desea configurar una IP estática? [y/N]: " yn
-  if [ "$yn" = "y" ] || [ "$yn" = "Y" ]; then
+  if [[ "$yn" =~ ^[Yy]$ ]]; then
     read -p "Introduzca la IP estática (ejemplo: 192.168.1.2): " IP
     read -p "Introduzca la máscara de red (ejemplo: 24): " NETMASK
     read -p "Introduzca la puerta de enlace (ejemplo: 192.168.1.1): " GATEWAY
     STATIC_IP="${IP}/${NETMASK},gw=${GATEWAY}"
-    if echo "$STATIC_IP" | grep -E -q '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+,gw=[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'; then
+    if [[ "$STATIC_IP" =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+,gw=[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
       break
     else
       echo -e "${RED}Formato de IP estática incorrecto. Siga el formato indicado en los ejemplos.${NC}"
@@ -82,7 +80,7 @@ done
 
 # Crear el contenedor en local-lvm
 echo "Creando el contenedor en local-lvm..."
-pct create $VMID local:vztmpl/alpine-3.18-default_20230607_amd64.tar.xz \
+pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
   --hostname firefly-iii \
   --password $PASSWORD \
   --unprivileged 1 \
@@ -101,39 +99,18 @@ pct start $VMID
 # Esperar a que el contenedor se inicie completamente
 sleep 10
 
-# Instalar Docker
-echo "Instalando Docker..."
-if ! pct exec $VMID -- sh -c "apk update && apk add docker"; then
-  echo "Error al instalar Docker. Abortando."
-  exit 1
-fi
+# Instalar Docker y Docker Compose
+pct exec $VMID -- bash -c "apt update && apt install -y docker.io docker-compose git"
 
-# Iniciar el servicio de Docker
-echo "Iniciando el servicio de Docker..."
-if ! pct exec $VMID -- sh -c "rc-service docker start"; then
-  echo "Error al iniciar el servicio de Docker. Abortando."
-  exit 1
-fi
-
-# Instalar Docker Compose mediante descarga directa
-echo "Instalando Docker Compose..."
-if ! pct exec $VMID -- sh -c "curl -L 'https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)' -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose"; then
-  echo "Error al instalar Docker Compose. Abortando."
-  exit 1
-fi
+# Clonar el repositorio de Firefly III para obtener los archivos .env
+DOCKER_COMPOSE_DIR="/root/firefly"
+pct exec $VMID -- bash -c "git clone https://github.com/jmlcas/fireflyIII $DOCKER_COMPOSE_DIR"
 
 # Descargar el archivo docker-compose.yml de Firefly III
-echo "Descargando el archivo docker-compose.yml de Firefly III..."
-DOCKER_COMPOSE_DIR="/root/firefly"
-pct exec $VMID -- sh -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/docker-compose.yml"
-
-# Descargar el archivo .env de Firefly III
-echo "Descargando el archivo .env de Firefly III..."
-pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/.env"
+pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/firefly-iii/docker/master/docker-compose.yml"
 
 # Iniciar Firefly III
-echo "Iniciando Firefly III..."
-pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
+pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
 
 echo "-------------------------------------"
 echo "Resumen de la instalación:"
