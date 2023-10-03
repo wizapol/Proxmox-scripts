@@ -178,7 +178,7 @@ else
   exit 1
 fi
 
-if pct exec $VMID -- bash -c "sed -i 's/firefly_password/$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/.env"; then
+if pct exec $VMID -- bash -c "sed -i 's/firefly_password/\"$DB_PASSWORD\"/g' $DOCKER_COMPOSE_DIR/.env"; then
   echo -e "${GREEN}Contraseña actualizada con éxito en .env.${NC}"
 else
   echo -e "${RED}Error al actualizar la contraseña en .env. Abortando.${NC}"
