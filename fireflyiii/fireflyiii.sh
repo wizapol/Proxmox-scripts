@@ -179,6 +179,11 @@ pct exec $VMID -- bash -c "sed -i 's/8200:8080/$NEW_PORT:8080/g' $DOCKER_COMPOSE
 # Iniciar Firefly III
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
 
+# Añadir tag y descripción al contenedor
+pct set $VMID -tags "administracion"
+RESUMEN="Resumen de la instalación:\nID del contenedor: $VMID\nOS: Ubuntu 23.04\nContraseña CT: $PASSWORD\nCPU: $CPU\nRAM: ${RAM}MB\nSTORAGE: 4GB\nNetwork: $STATIC_IP\nPuerto: $NEW_PORT\nUsuario DB: firefly\nContraseña DB: $DB_PASSWORD\nby wizapol"
+pct set $VMID -description "$RESUMEN"
+
 echo "-------------------------------------"
 echo "Resumen de la instalación:"
 echo "ID del contenedor: $VMID"
