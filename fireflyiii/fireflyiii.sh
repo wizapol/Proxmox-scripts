@@ -2,6 +2,7 @@
 
 # Colores para la salida
 GREEN='\033[0;32m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Función para mostrar el encabezado
@@ -20,6 +21,13 @@ header_info
 if [ "$(id -u)" -ne 0 ]; then
   echo "Este script debe ser ejecutado como root"
   exit 1
+fi
+
+# Verificar si la plantilla de Alpine existe
+TEMPLATE_PATH="/var/lib/vz/template/cache/alpine-3.18-default_20230607_amd64.tar.xz"
+if [ ! -f "$TEMPLATE_PATH" ]; then
+  echo -e "${RED}La plantilla de Alpine no se encuentra. Descargando...${NC}"
+  # Aquí puedes agregar el comando para descargar la plantilla de Alpine
 fi
 
 # Obtener el próximo ID de VM/CT
@@ -94,18 +102,20 @@ pct start $VMID
 sleep 10
 
 # Instalar Docker y Docker Compose
+echo "Instalando Docker y Docker Compose..."
 pct exec $VMID -- sh -c "apk update && apk add docker docker-compose git"
 
 # Descargar el archivo docker-compose.yml de Firefly III
 echo "Descargando el archivo docker-compose.yml de Firefly III..."
-pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/docker-compose.yml"
+DOCKER_COMPOSE_DIR="/root/firefly"
+pct exec $VMID -- sh -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/docker-compose.yml"
 
 # Descargar el archivo .env de Firefly III
-echo "Descargando el archivo docker-compose.yml de Firefly III..."
+echo "Descargando el archivo .env de Firefly III..."
 pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/.env"
 
-
 # Iniciar Firefly III
+echo "Iniciando Firefly III..."
 pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
 
 echo "-------------------------------------"
