@@ -105,12 +105,11 @@ pct exec $VMID -- bash -c "apt update && apt install -y docker.io docker-compose
 # Descargar el archivo docker-compose.yml de Firefly III
 echo "Descargando el archivo docker-compose.yml de Firefly III..."
 DOCKER_COMPOSE_DIR="/root/firefly"
-pct exec $VMID -- sh -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/docker-compose.yml"
+pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/docker-compose.yml"
 
 # Descargar el archivo .env de Firefly III
 echo "Descargando el archivo .env de Firefly III..."
-pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/.env"
-
+pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/.env"
 
 # Iniciar Firefly III
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
