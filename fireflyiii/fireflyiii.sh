@@ -102,12 +102,15 @@ sleep 10
 # Instalar Docker y Docker Compose
 pct exec $VMID -- bash -c "apt update && apt install -y docker.io docker-compose git"
 
-# Clonar el repositorio de Firefly III para obtener los archivos .env
-DOCKER_COMPOSE_DIR="/root/firefly"
-pct exec $VMID -- bash -c "git clone https://github.com/jmlcas/fireflyIII $DOCKER_COMPOSE_DIR"
-
 # Descargar el archivo docker-compose.yml de Firefly III
-pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/firefly-iii/docker/master/docker-compose.yml"
+echo "Descargando el archivo docker-compose.yml de Firefly III..."
+DOCKER_COMPOSE_DIR="/root/firefly"
+pct exec $VMID -- sh -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/docker-compose.yml"
+
+# Descargar el archivo .env de Firefly III
+echo "Descargando el archivo .env de Firefly III..."
+pct exec $VMID -- sh -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/.env"
+
 
 # Iniciar Firefly III
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
