@@ -134,17 +134,18 @@ pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubuser
 # Modificar la contraseña de la base de datos en los archivos descargados
 pct exec $VMID -- bash -c "sed -i 's/firefly_password/$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"
 pct exec $VMID -- bash -c "sed -i 's/firefly_password/$DB_PASSWORD/g' $DOCKER_COMPOSE_DIR/.env"
+echo "inyectando nuevo password en los archivos descargados..."
 
 # Iniciar Firefly III
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
 
 # Verificar que la contraseña de la base de datos se ha cambiado correctamente
-sleep 30  # Esperar a que el contenedor de la base de datos se inicie
+sleep 10  # Esperar a que el contenedor de la base de datos se inicie
 DB_VERIFICATION=$(pct exec $VMID -- bash -c "docker exec db mysql -ufirefly -p$DB_PASSWORD -e 'SHOW DATABASES;' 2>&1")
 if [[ "$DB_VERIFICATION" == *"Access denied"* ]]; then
   echo -e "${RED}La verificación de la contraseña de la base de datos ha fallado.${NC}"
 else
-  echo -e "${GREEN}La verificación de la contraseña de la base de datos ha sido exitosa.${NC}"
+  echo -e "${GREEN}La verificación de la contraseña de la base de datos ha sido exitosa, la instalacion se ah completado correctamente${NC}"
 fi
 
 echo "-------------------------------------"
