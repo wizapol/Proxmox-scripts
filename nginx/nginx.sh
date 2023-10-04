@@ -58,7 +58,7 @@ done
 
 # Crear el contenedor en local-lvm
 echo "Creando el contenedor en local-lvm..."
-pct create $VMID local:vztmpl/alpine-3.18-standard_3.18-1_amd64.tar.zst \
+pct create $VMID local:vztmpl/alpine-3.18-default_20230607_amd64.tar.xz \
   --hostname nginx-proxy-manager \
   --password $PASSWORD \
   --unprivileged 1 \
@@ -72,14 +72,14 @@ if [ $? -ne 0 ]; then
   read -p "¿Desea descargar la imagen de Alpine automáticamente? [y/N]: " yn
   if [[ "$yn" =~ ^[Yy]$ ]]; then
     echo "Descargando la imagen de Alpine..."
-    pveam download local alpine-3.18-standard_3.18-1_amd64.tar.zst
+    pveam download local alpine-3.18-default_20230607_amd64.tar.xz
     if [ $? -ne 0 ]; then
       echo -e "${RED}Error al descargar la imagen de Alpine. Verifique la conexión a Internet y los repositorios.${NC}"
       exit 1
     else
       echo -e "${GREEN}Imagen de Alpine descargada con éxito.${NC}"
       # Intentar crear el contenedor de nuevo
-      pct create $VMID local:vztmpl/alpine-3.18-standard_3.18-1_amd64.tar.zst \
+      pct create $VMID local:vztmpl/alpine-3.18-default_20230607_amd64.tar.xz \
         --hostname nginx-proxy-manager \
         --password $PASSWORD \
         --unprivileged 1 \
