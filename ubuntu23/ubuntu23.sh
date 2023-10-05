@@ -96,12 +96,12 @@ case $yn in
   [Yy]* ) 
     CPU=1
     RAM=1024
-    STORAGE=3072
+    STORAGE=3
     ;;
   * ) 
     read -p "Introduzca el número de CPUs: " CPU
     read -p "Introduzca la cantidad de RAM en MB: " RAM
-    read -p "Introduzca la cantidad de almacenamiento en MB: " STORAGE
+    read -p "Introduzca la cantidad de almacenamiento en GB: " STORAGE
     ;;
 esac
 
