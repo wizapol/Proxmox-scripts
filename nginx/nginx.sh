@@ -253,11 +253,11 @@ fi
 
 # Instalar Nginx Proxy Manager
 echo -e "${GREEN}Instalando Nginx Proxy Manager...${NC}"
-pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR"
-pct exec $VMID -- bash -c "docker-compose up -d"
+pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
+
 
 # Añadir tag al contenedor
-pct set $VMID -tags "Reverse Proxy"
+pct set $VMID -tags "Reverse-Proxy"
 
 # Construir el resumen de la instalación
 RESUMEN="Proxmox Script by wizapol"
