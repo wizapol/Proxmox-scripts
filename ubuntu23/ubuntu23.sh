@@ -124,23 +124,6 @@ while true; do
   fi
 done
 
-# Preguntar al usuario si el contenedor debe iniciar automáticamente
-read -p "¿Desea que el contenedor inicie automáticamente? [y/N]: " yn
-if [[ "$yn" =~ ^[Yy]$ ]]; then
-  echo "Configurando el contenedor para que inicie automáticamente..."
-  pct set $VMID -onboot 1
-  if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Configuración de inicio automático actualizada con éxito.${NC}"
-  else
-    echo -e "${RED}No se pudo actualizar la configuración de inicio automático. Deteniendo y eliminando el contenedor...${NC}"
-    pct stop $VMID
-    pct destroy $VMID
-    exit 1
-  fi
-else
-  echo "El contenedor no se configurará para iniciar automáticamente."
-fi
-
 # Crear el contenedor en local-lvm
 echo "Creando el contenedor en local-lvm..."
 pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
@@ -185,6 +168,24 @@ if [ $? -ne 0 ]; then
     exit 1
   fi
 fi
+
+# Preguntar al usuario si el contenedor debe iniciar automáticamente
+read -p "¿Desea que el contenedor inicie automáticamente? [y/N]: " yn
+if [[ "$yn" =~ ^[Yy]$ ]]; then
+  echo "Configurando el contenedor para que inicie automáticamente..."
+  pct set $VMID -onboot 1
+  if [ $? -eq 0 ]; then
+    echo -e "${GREEN}Configuración de inicio automático actualizada con éxito.${NC}"
+  else
+    echo -e "${RED}No se pudo actualizar la configuración de inicio automático. Deteniendo y eliminando el contenedor...${NC}"
+    pct stop $VMID
+    pct destroy $VMID
+    exit 1
+  fi
+else
+  echo "El contenedor no se configurará para iniciar automáticamente."
+fi
+
 
 # Habilitar el anidamiento para Docker
 pct set $VMID -features nesting=1
