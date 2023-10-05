@@ -12,7 +12,7 @@ function header_info {
   clear
   echo -e "${GREEN}"
   echo "---------------------------------------------------"
-  echo "  Instalador de Firefly III en Proxmox by wizapol"
+  echo "  Instalador de Ubuntu 23.04 Proxmox by wizapol"
   echo "---------------------------------------------------"
   echo -e "${NC}"
 }
@@ -198,5 +198,17 @@ pct set $VMID -features nesting=1
 
 echo -e "${GREEN}Imagen de Ubuntu Instalada con éxito.${NC}"
 
+# Preguntar al usuario si desea iniciar la VM
+read -p "¿Desea iniciar la VM ahora? [y/N]: " yn
+case $yn in
+  [Yy]* ) 
+    echo "Iniciando la VM..."
+    pct start $VMID
+    ;;
+  * ) 
+    echo "La VM no se iniciará. Puede iniciarla manualmente más tarde."
+    exit 0
+    ;;
+esac
 
 INSTALL_SUCCESS=true
