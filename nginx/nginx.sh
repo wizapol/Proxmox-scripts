@@ -64,7 +64,7 @@ pct create $VMID local:vztmpl/alpine-3.18-default_20230607_amd64.tar.xz \
   --unprivileged 1 \
   --net0 name=eth0,bridge=vmbr0,ip=dhcp \
   --cores 1 \
-  --memory 1 \
+  --memory 1024 \
   --rootfs local-lvm:1 \
   --storage local-lvm
 
