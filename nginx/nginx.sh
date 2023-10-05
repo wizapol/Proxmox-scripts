@@ -91,11 +91,11 @@ while true; do
 done
 
 # Configuración de recursos de VM
-read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 1GB RAM, 3GB de almacenamiento)? [y/N]: " yn
+read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 512MB RAM, 3GB de almacenamiento)? [y/N]: " yn
 case $yn in
   [Yy]* ) 
     CPU=1
-    RAM=1024
+    RAM=512
     STORAGE=3
     ;;
   * ) 
