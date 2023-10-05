@@ -127,7 +127,7 @@ done
 # Crear el contenedor en local-lvm
 echo "Creando el contenedor en local-lvm..."
 pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
-  --hostname firefly-iii \
+  --hostname $HOSTNAME \
   --password $PASSWORD \
   --unprivileged 1 \
   --net0 name=eth0,bridge=vmbr0,ip=$STATIC_IP \
@@ -150,7 +150,7 @@ if [ $? -ne 0 ]; then
       # Intentar crear el contenedor de nuevo
       echo -e "${GREEN}Creando el contenedor en local-lvm...${NC}"
       pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
-        --hostname firefly-iii \
+        --hostname $HOSTNAME \
         --password $PASSWORD \
         --unprivileged 1 \
         --net0 name=eth0,bridge=vmbr0,ip=$STATIC_IP \
@@ -191,11 +191,15 @@ fi
 pct set $VMID -features nesting=1
 
 # Iniciar el contenedor
-echo "Iniciando el contenedor..."
+echo -e "${GREEN}Iniciando el contenedor...${NC}"
 pct start $VMID
 
 # Esperar a que el contenedor se inicie completamente
 sleep 10
+
+# Iniciar actualizacion de OS
+echo -e "${GREEN}Actualizando OS...${NC}"
+pct exec $VMID -- bash -c "apt update && apt upgrade -y"
 
 echo "-------------------------------------"
 echo "Resumen de la instalación:"
@@ -209,6 +213,7 @@ echo "STORAGE: $STORAGE"
 echo "Network: $STATIC_IP"
 
 echo "-------------------------------------"
+
 
 
 # Añadir tag al contenedor
