@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+INSTALL_SUCCESS=false
+
 # Colores para la salida
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -17,9 +19,12 @@ function header_info {
 
 # Función de limpieza
 function cleanup {
-  if [ -n "$VMID" ]; then
-    echo -e "${RED}Ocurrió un error. Eliminando la VM con ID $VMID...${NC}"
-    pct destroy $VMID
+  if [ "$INSTALL_SUCCESS" != "true" ]; then
+    if [ -n "$VMID" ]; then
+      echo -e "${RED}Ocurrió un error. Eliminando la VM con ID $VMID...${NC}"
+      pct stop $VMID  # Detener el contenedor antes de destruirlo
+      pct destroy $VMID
+    fi
   fi
 }
 
@@ -258,5 +263,6 @@ fi
 
 # Final del script
 echo -e "${GREEN}La instalación se ha completado con éxito.${NC}"
+INSTALL_SUCCESS=false
 
 
