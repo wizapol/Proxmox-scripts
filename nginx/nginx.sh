@@ -119,11 +119,18 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# Instalar Docker y Docker Compose
-pct exec $VMID -- bash -c "apk add docker docker-compose"
+# Instalar Docker
+pct exec $VMID -- bash -c "apk add docker"
+if [ $? -ne 0 ]; then
+  echo -e "${RED}Error al instalar Docker. Abortando.${NC}"
+  exit 1
+fi
+
+# Instalar Docker Compose
+pct exec $VMID -- bash -c "apk add docker-compose"
 
 if [ $? -ne 0 ]; then
-  echo -e "${RED}Error al instalar Docker y Docker Compose. Abortando.${NC}"
+  echo -e "${RED}Error al instalar sDocker Compose. Abortando.${NC}"
   exit 1
 fi
 
