@@ -12,7 +12,7 @@ function header_info {
   clear
   echo -e "${GREEN}"
   echo "---------------------------------------------------"
-  echo "  Instalador de Ubuntu 23.04 Proxmox by wizapol"
+  echo "  Instalador de Ubuntu 23.04 en Proxmox by wizapol"
   echo "---------------------------------------------------"
   echo -e "${NC}"
 }
@@ -63,16 +63,19 @@ while true; do
   esac
 done
 
+# Confirmar HOSTNAME para el contenedor
+while true; do
+  read -p "Introduzca el nombre del HOSTNAME para el contenedor: " HOSTNAME
+  if [[ "$HOSTNAME" =~ ^[a-zA-Z0-9][a-zA-Z0-9-]*$ ]]; then
+    break
+  else
+    echo -e "${RED}El nombre del HOSTNAME no es válido. Debe comenzar con una letra o número y puede contener letras, números y guiones.${NC}"
+  fi
+done
 
 # Inicialización de variables
 PASSWORD=""
 PASSWORD_CONFIRM=""
-DB_PASSWORD=""
-DB_PASSWORD_CONFIRM=""
-
-# Confirmar HOSTNAME para el contenedor
-read -p "Introduzca el nombre del HOSTNAME para el contenedor: " HOSTNAME
-
 
 # Confirmar contraseña para el contenedor
 while true; do
@@ -88,11 +91,11 @@ while true; do
 done
 
 # Configuración de recursos de VM
-read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 512MB RAM, 3GB de almacenamiento)? [y/N]: " yn
+read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 1GB RAM, 3GB de almacenamiento)? [y/N]: " yn
 case $yn in
   [Yy]* ) 
     CPU=1
-    RAM=512
+    RAM=1024
     STORAGE=3072
     ;;
   * ) 
@@ -121,10 +124,27 @@ while true; do
   fi
 done
 
+# Preguntar al usuario si el contenedor debe iniciar automáticamente
+read -p "¿Desea que el contenedor inicie automáticamente? [y/N]: " yn
+if [[ "$yn" =~ ^[Yy]$ ]]; then
+  echo "Configurando el contenedor para que inicie automáticamente..."
+  pct set $VMID -onboot 1
+  if [ $? -eq 0 ]; then
+    echo -e "${GREEN}Configuración de inicio automático actualizada con éxito.${NC}"
+  else
+    echo -e "${RED}No se pudo actualizar la configuración de inicio automático. Deteniendo y eliminando el contenedor...${NC}"
+    pct stop $VMID
+    pct destroy $VMID
+    exit 1
+  fi
+else
+  echo "El contenedor no se configurará para iniciar automáticamente."
+fi
+
 # Crear el contenedor en local-lvm
 echo "Creando el contenedor en local-lvm..."
 pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
-  --hostname $HOSTNAME \
+  --hostname firefly-iii \
   --password $PASSWORD \
   --unprivileged 1 \
   --net0 name=eth0,bridge=vmbr0,ip=$STATIC_IP \
@@ -147,7 +167,7 @@ if [ $? -ne 0 ]; then
       # Intentar crear el contenedor de nuevo
       echo -e "${GREEN}Creando el contenedor en local-lvm...${NC}"
       pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
-        --hostname $HOSTNAME \
+        --hostname firefly-iii \
         --password $PASSWORD \
         --unprivileged 1 \
         --net0 name=eth0,bridge=vmbr0,ip=$STATIC_IP \
@@ -166,23 +186,39 @@ if [ $? -ne 0 ]; then
   fi
 fi
 
-
 # Habilitar el anidamiento para Docker
 pct set $VMID -features nesting=1
 
-echo -e "${GREEN}Imagen de Ubuntu Instalada con éxito.${NC}"
+# Iniciar el contenedor
+echo "Iniciando el contenedor..."
+pct start $VMID
 
-# Preguntar al usuario si desea iniciar la VM
-read -p "¿Desea iniciar la VM ahora? [y/N]: " yn
-case $yn in
-  [Yy]* ) 
-    echo "Iniciando la VM..."
-    pct start $VMID
-    ;;
-  * ) 
-    echo "La VM no se iniciará. Puede iniciarla manualmente más tarde."
-    exit 0
-    ;;
-esac
+# Esperar a que el contenedor se inicie completamente
+sleep 10
 
-INSTALL_SUCCESS=true
+echo "-------------------------------------"
+echo "Resumen de la instalación:"
+echo "ID del contenedor: $VMID"
+echo "Nombre del Contenedor: $HOSTNAME"
+echo "OS: Ubuntu 23.04"
+echo "Contraseña CT: $PASSWORD"
+echo "CPU: $CPU"
+echo "RAM: ${RAM}MB"
+echo "STORAGE: $STORAGE"
+echo "Network: $STATIC_IP"
+
+echo "-------------------------------------"
+
+
+# Añadir tag al contenedor
+pct set $VMID -tags "administracion"
+
+# Construir el resumen de la instalación
+RESUMEN="FireFly III Proxmox Script by wizapol"
+
+# Añadir la descripción al contenedor
+pct set $VMID -description "$RESUMEN"
+
+# Final del script
+echo -e "${GREEN}La instalación se ha completado con éxito.${NC}"
+INSTALL_SUCCESS="true"
