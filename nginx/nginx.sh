@@ -253,6 +253,7 @@ fi
 
 # Instalar Nginx Proxy Manager
 echo -e "${GREEN}Instalando Nginx Proxy Manager...${NC}"
+pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR"
 pct exec $VMID -- bash -c "docker-compose up -d"
 
 # Añadir tag al contenedor
