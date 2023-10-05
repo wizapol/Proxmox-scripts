@@ -160,6 +160,7 @@ if [ $? -ne 0 ]; then
     else
       echo -e "${GREEN}Imagen de Ubuntu descargada con éxito.${NC}"
       # Intentar crear el contenedor de nuevo
+      echo -e "${GREEN}Creando el contenedor en local-lvm...${NC}"
       pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
         --hostname firefly-iii \
         --password $PASSWORD \
@@ -191,6 +192,7 @@ pct start $VMID
 sleep 10
 
 # Instalar Docker y Docker Compose
+echo -e "${GREEN}Instalando Docker y Docker Compose...${NC}"
 pct exec $VMID -- bash -c "apt update && apt install -y docker.io docker-compose git"
 # Descargar el archivo docker-compose.yml de Firefly III
 echo "Descargando el archivo docker-compose.yml de Firefly III..."
@@ -198,7 +200,7 @@ DOCKER_COMPOSE_DIR="/root/firefly"
 pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/docker-compose.yml"
 
 # Descargar el archivo .env de Firefly III
-echo "Descargando el archivo .env de Firefly III..."
+echo -e "${GREEN}Descargando el archivo .env de Firefly III...${NC}"
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/fireflyiii/env/.env"
 
 # Modificar la contraseña de la base de datos en los archivos descargados
@@ -224,22 +226,15 @@ else
   exit 1
 fi
 # Iniciar Firefly III
+
+echo -e "${GREEN}Iniciando Firefly III...${NC}"
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
 
 # Añadir tag al contenedor
 pct set $VMID -tags "administracion"
 
 # Construir el resumen de la instalación
-RESUMEN="Resumen de la instalación: "
-RESUMEN+="Firefly III, "
-RESUMEN+="ID del contenedor: $VMID, "
-RESUMEN+="OS: Ubuntu 23.04, "
-RESUMEN+="CPU: $CPU, "
-RESUMEN+="RAM: ${RAM}MB, "
-RESUMEN+="STORAGE: 4GB, "
-RESUMEN+="Network: $STATIC_IP, "
-RESUMEN+="Puerto: $NEW_PORT, "
-RESUMEN+="by wizapol"
+RESUMEN="FireFly III Proxmox Script by wizapol"
 
 # Añadir la descripción al contenedor
 pct set $VMID -description "$RESUMEN"
