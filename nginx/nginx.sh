@@ -138,7 +138,18 @@ fi
 # Crear el archivo docker-compose.yml para Nginx Proxy Manager
 echo "Creando el archivo docker-compose.yml para Nginx Proxy Manager..."
 DOCKER_COMPOSE_DIR="/root/nginx-proxy-manager"
-pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://github.com/NginxProxyManager/nginx-proxy-manager/blob/master/docker/docker-compose.yml"
+pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && echo \"version: '3.8'
+services:
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt\" > $DOCKER_COMPOSE_DIR/docker-compose.yml"
 
 if [ $? -ne 0 ]; then
   echo -e "${RED}Error al crear el archivo docker-compose.yml. Abortando.${NC}"
