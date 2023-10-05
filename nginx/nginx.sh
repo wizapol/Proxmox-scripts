@@ -26,7 +26,7 @@ fi
 # Obtener el próximo ID de VM/CT
 NEXTID=$(pvesh get /cluster/nextid)
 if [ $? -ne 0 ]; then
-  echo -e "${RED}Error al obtener el próximo ID de VM/CT. Abortando.${NC}"
+  echo -e "${RED}Error al obtener el próximo ID valido de VM/CT. Abortando.${NC}"
   exit 1
 fi
 
