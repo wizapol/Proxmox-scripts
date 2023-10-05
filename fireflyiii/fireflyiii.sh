@@ -118,7 +118,8 @@ pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
   --net0 name=eth0,bridge=vmbr0,ip=$STATIC_IP \
   --cores $CPU \
   --memory $RAM \
-  --storage local-lvm
+  --storage local-lvm \
+  --rootfs local-lvm:2
 
 if [ $? -ne 0 ]; then
   echo -e "${RED}Error al crear el contenedor. La imagen de Ubuntu no se encuentra disponible.${NC}"
@@ -140,6 +141,7 @@ if [ $? -ne 0 ]; then
         --cores $CPU \
         --memory $RAM \
         --storage local-lvm
+        --rootfs local-lvm:2
       if [ $? -ne 0 ]; then
         echo -e "${RED}Error al crear el contenedor incluso después de descargar la imagen de Ubuntu. Abortando.${NC}"
         exit 1
