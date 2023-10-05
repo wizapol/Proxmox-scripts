@@ -57,7 +57,7 @@ while true; do
 done
 
 # Crear el contenedor en local-lvm
-echo "${GREEN}Creando el contenedor en local-lvm...${NC}"
+echo -e "${GREEN}Creando el contenedor en local-lvm...${NC}"
 pct create $VMID local:vztmpl/alpine-3.18-default_20230607_amd64.tar.xz \
   --hostname nginx-proxy-manager \
   --password $PASSWORD \
@@ -102,7 +102,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Iniciar el contenedor
-echo "${GREEN}Iniciando el contenedor...${NC}"
+echo -e "${GREEN}Iniciando el contenedor...${NC}"
 pct start $VMID
 
 if [ $? -ne 0 ]; then
@@ -114,7 +114,7 @@ fi
 sleep 10
 ${GREEN} ${NC}
 # Instalar Bash en el contenedor
-echo "${GREEN}Instalando Bash en el contenedor...${NC}"
+echo -e "${GREEN}Instalando Bash en el contenedor...${NC}"
 pct exec $VMID -- apk add bash
 
 if [ $? -ne 0 ]; then
@@ -123,7 +123,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Instalar Docker
-echo "${GREEN}Instalando Docker...${NC}"
+echo -e "${GREEN}Instalando Docker...${NC}"
 pct exec $VMID -- bash -c "apk add docker"
 if [ $? -ne 0 ]; then
   echo -e "${RED}Error al instalar Docker. Abortando.${NC}"
@@ -131,7 +131,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Instalar Docker Compose
-echo "${GREEN}Instalando Docker-Compose...${NC}"
+echo -e "${GREEN}Instalando Docker-Compose...${NC}"
 pct exec $VMID -- bash -c "apk add docker-compose"
 
 if [ $? -ne 0 ]; then
@@ -140,7 +140,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Iniciar el servicio Docker
-echo "${GREEN}Iniciando servicio Docker...${NC}"
+echo -e "${GREEN}Iniciando servicio Docker...${NC}"
 pct exec $VMID -- bash -c "rc-update add docker boot && service docker start"
 
 if [ $? -ne 0 ]; then
@@ -149,7 +149,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Crear el archivo docker-compose.yml para Nginx Proxy Manager
-echo "${GREEN}Creando el archivo docker-compose.yml para Nginx Proxy Manager...${NC}"
+echo -e "${GREEN}Creando el archivo docker-compose.yml para Nginx Proxy Manager...${NC}"
 DOCKER_COMPOSE_DIR="/root/nginx-proxy-manager"
 pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && echo \"version: '3.8'
 services:
@@ -170,7 +170,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Iniciar Nginx Proxy Manager
-echo "${GREEN}Iniciando Nginx...${NC}"
+echo -e "${GREEN}Iniciando Nginx...${NC}"
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
 
 if [ $? -ne 0 ]; then
