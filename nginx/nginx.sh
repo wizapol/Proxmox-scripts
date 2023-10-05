@@ -100,7 +100,7 @@ if [ $? -ne 0 ]; then
         --unprivileged 1 \
         --net0 name=eth0,bridge=vmbr0,ip=dhcp \
         --cores 1 \
-        --memory 1 \
+        --memory 1024 \
         --rootfs local-lvm:1 \
         --storage local-lvm
       if [ $? -ne 0 ]; then
