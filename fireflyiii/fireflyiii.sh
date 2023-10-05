@@ -26,7 +26,7 @@ function cleanup {
       pct destroy $VMID
     fi
   fi
-}
+}    
 
 # Registrar la función de limpieza para ejecutarse al salir del script
 trap cleanup EXIT
