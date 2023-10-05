@@ -237,9 +237,16 @@ if [[ "$yn" =~ ^[Yy]$ ]]; then
   if [ $? -eq 0 ]; then
     echo -e "${GREEN}Configuración de inicio automático actualizada con éxito.${NC}"
   else
-    echo -e "${RED}No se pudo actualizar la configuración de inicio automático.${NC}"
+    echo -e "${RED}No se pudo actualizar la configuración de inicio automático. Deteniendo y eliminando el contenedor...${NC}"
+    pct stop $VMID
+    pct destroy $VMID
+    exit 1
   fi
 else
   echo "El contenedor no se configurará para iniciar automáticamente."
 fi
+
+# Final del script
+echo -e "${GREEN}La instalación se ha completado con éxito.${NC}"
+
 
