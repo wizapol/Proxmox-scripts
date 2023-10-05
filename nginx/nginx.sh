@@ -236,12 +236,22 @@ echo "-------------------------------------"
 
 # Instalar docker y docker-compose
 echo -e "${GREEN}Instalando Docker y Docker-Compose...${NC}"
-pct exec $VMID -- bash -c "apt install docker docker-compose -y"
+if pct exec $VMID -- bash -c "apt install docker docker-compose -y"
+  echo -e "${GREEN}Instalacion de Docker y Docker-compose Complete.${NC}"
+else
+  echo -e "${RED}Error al Instalar Docker y Docker-compose. Abortando.${NC}"
+  exit 1
+fi
 
 # Descargar el archivo docker-compose.yml de Firefly III
 echo "Descargando el archivo docker-compose.yml para Nginx Proxy Manager..."
 DOCKER_COMPOSE_DIR="/root/nginx-proxy-manager"
-pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/nginx/env/docker-compose.yml"
+if pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/nginx/env/docker-compose.yml"
+  echo -e "${GREEN}Descarga de docker-compose.yml para Nginx Proxy Manager Completa.${NC}"
+else
+  echo -e "${RED}Error al descargar el archivo. Abortando.${NC}"
+  exit 1
+fi
 
 # Modificar el puerto en el archivo docker-compose.yml descargado
 if pct exec $VMID -- bash -c "sed -i 's/81:81/$NEW_PORT:81/g' $DOCKER_COMPOSE_DIR/docker-compose.yml"; then
@@ -253,8 +263,12 @@ fi
 
 # Instalar Nginx Proxy Manager
 echo -e "${GREEN}Instalando Nginx Proxy Manager...${NC}"
-pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
-
+if pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
+  echo -e "${GREEN}Instalacion de Nginx Proxy Manager Complete.${NC}"
+else
+  echo -e "${RED}Error al Instalar Nginx Proxy Manager. Abortando.${NC}"
+  exit 1
+fi
 
 # Añadir tag al contenedor
 pct set $VMID -tags "Reverse-Proxy"
