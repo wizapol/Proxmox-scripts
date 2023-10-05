@@ -82,18 +82,6 @@ while true; do
     echo -e "${RED}Las contraseñas no coinciden. Inténtelo de nuevo.${NC}"
   fi
 done
-# Confirmar contraseña para la base de datos
-while true; do
-  read -s -p "Introduzca la contraseña para la base de datos: " DB_PASSWORD
-  echo ""
-  read -s -p "Confirme la contraseña para la base de datos: " DB_PASSWORD_CONFIRM
-  echo ""
-  if [ "$DB_PASSWORD" == "$DB_PASSWORD_CONFIRM" ]; then
-    break
-  else
-    echo -e "${RED}Las contraseñas de la base de datos no coinciden. Inténtelo de nuevo.${NC}"
-  fi
-done
 
 # Configuración de recursos de VM
 read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 512MB RAM, 3GB de almacenamiento)? [y/N]: " yn
@@ -126,24 +114,6 @@ while true; do
   else
     STATIC_IP="dhcp"
     break
-  fi
-done
-
-# Confirmar puerto para Firefly III
-while true; do
-  read -p "El puerto por defecto para Firefly III es 8200. ¿Desea cambiarlo? [y/N]: " yn
-  if [[ "$yn" =~ ^[Yy]$ ]]; then
-    while true; do
-      read -p "Introduzca el nuevo puerto para Firefly III: " NEW_PORT
-      if [[ "$NEW_PORT" =~ ^[0-9]+$ ]] && [ "$NEW_PORT" -ge 1024 ] && [ "$NEW_PORT" -le 65535 ]; then
-        break 2  # Salir de ambos bucles while
-      else
-        echo -e "${RED}Por favor, introduzca un número de puerto válido (1024-65535).${NC}"
-      fi
-    done
-  else
-    NEW_PORT=8200
-    break  # Salir del bucle while externo
   fi
 done
 
