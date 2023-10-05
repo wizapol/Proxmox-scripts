@@ -57,14 +57,15 @@ while true; do
 done
 
 # Crear el contenedor en local-lvm
-echo "Creando el contenedor en local-lvm..."
+echo "${GREEN}Creando el contenedor en local-lvm...${NC}"
 pct create $VMID local:vztmpl/alpine-3.18-default_20230607_amd64.tar.xz \
   --hostname nginx-proxy-manager \
   --password $PASSWORD \
   --unprivileged 1 \
   --net0 name=eth0,bridge=vmbr0,ip=dhcp \
   --cores 1 \
-  --memory 256 \
+  --memory 1 \
+  --rootfs local-lvm:1 \
   --storage local-lvm
 
 if [ $? -ne 0 ]; then
@@ -78,14 +79,16 @@ if [ $? -ne 0 ]; then
       exit 1
     else
       echo -e "${GREEN}Imagen de Alpine descargada con éxito.${NC}"
+      
       # Intentar crear el contenedor de nuevo
+      echo -e "${GREEN}Creando contenedor...${NC}"
       pct create $VMID local:vztmpl/alpine-3.18-default_20230607_amd64.tar.xz \
         --hostname nginx-proxy-manager \
         --password $PASSWORD \
         --unprivileged 1 \
         --net0 name=eth0,bridge=vmbr0,ip=dhcp \
         --cores 1 \
-        --memory 256 \
+        --memory 1 \
         --storage local-lvm
       if [ $? -ne 0 ]; then
         echo -e "${RED}Error al crear el contenedor incluso después de descargar la imagen de Alpine. Abortando.${NC}"
@@ -99,7 +102,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Iniciar el contenedor
-echo "Iniciando el contenedor..."
+echo "${GREEN}Iniciando el contenedor...${NC}"
 pct start $VMID
 
 if [ $? -ne 0 ]; then
@@ -109,9 +112,9 @@ fi
 
 # Esperar a que el contenedor se inicie completamente
 sleep 10
-
+${GREEN} ${NC}
 # Instalar Bash en el contenedor
-echo "Instalando Bash en el contenedor..."
+echo "${GREEN}Instalando Bash en el contenedor...${NC}"
 pct exec $VMID -- apk add bash
 
 if [ $? -ne 0 ]; then
@@ -120,6 +123,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Instalar Docker
+echo "${GREEN}Instalando Docker...${NC}"
 pct exec $VMID -- bash -c "apk add docker"
 if [ $? -ne 0 ]; then
   echo -e "${RED}Error al instalar Docker. Abortando.${NC}"
@@ -127,14 +131,16 @@ if [ $? -ne 0 ]; then
 fi
 
 # Instalar Docker Compose
+echo "${GREEN}Instalando Docker-Compose...${NC}"
 pct exec $VMID -- bash -c "apk add docker-compose"
 
 if [ $? -ne 0 ]; then
-  echo -e "${RED}Error al instalar sDocker Compose. Abortando.${NC}"
+  echo -e "${RED}Error al instalar Docker Compose. Abortando.${NC}"
   exit 1
 fi
 
 # Iniciar el servicio Docker
+echo "${GREEN}Iniciando servicio Docker...${NC}"
 pct exec $VMID -- bash -c "rc-update add docker boot && service docker start"
 
 if [ $? -ne 0 ]; then
@@ -143,7 +149,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Crear el archivo docker-compose.yml para Nginx Proxy Manager
-echo "Creando el archivo docker-compose.yml para Nginx Proxy Manager..."
+echo "${GREEN}Creando el archivo docker-compose.yml para Nginx Proxy Manager...${NC}"
 DOCKER_COMPOSE_DIR="/root/nginx-proxy-manager"
 pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && echo \"version: '3.8'
 services:
@@ -152,7 +158,7 @@ services:
     restart: unless-stopped
     ports:
       - '80:80'
-      - '81:81'
+      - '8581:81'
       - '443:443'
     volumes:
       - ./data:/data
@@ -164,6 +170,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Iniciar Nginx Proxy Manager
+echo "${GREEN}Iniciando Nginx...${NC}"
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
 
 if [ $? -ne 0 ]; then
@@ -172,17 +179,10 @@ if [ $? -ne 0 ]; then
 fi
 
 # Añadir tag al contenedor
-pct set $VMID -tags "administracion"
+pct set $VMID -tags "proxy"
 
 # Construir el resumen de la instalación
-RESUMEN="Resumen de la instalación: "
-RESUMEN+="Nginx Proxy Manager, "
-RESUMEN+="ID del contenedor: $VMID, "
-RESUMEN+="OS: Alpine 3.18, "
-RESUMEN+="CPU: 1, "
-RESUMEN+="RAM: 256MB, "
-RESUMEN+="STORAGE: 2GB, "
-RESUMEN+="Network: DHCP"
+RESUMEN="Nginx Proxy Manager"
 
 # Añadir la descripción al contenedor
 pct set $VMID -description "$RESUMEN"
@@ -193,8 +193,8 @@ echo "ID del contenedor: $VMID"
 echo "OS: Alpine 3.18"
 echo "Contraseña CT: $PASSWORD"
 echo "CPU: 1"
-echo "RAM: 256MB"
-echo "STORAGE: 2GB"
+echo "RAM: 1GB"
+echo "STORAGE: 1GB"
 echo "Network: DHCP"
 echo "-------------------------------------"
 
