@@ -152,6 +152,15 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# Iniciar el servicio Docker
+echo -e "${GREEN}Iniciando servicio Docker...${NC}"
+pct exec $VMID -- bash -c "rc-update add docker boot && service docker start"
+
+if [ $? -ne 0 ]; then
+  echo -e "${RED}Error al iniciar el servicio Docker. Abortando.${NC}"
+  exit 1
+fi
+
 # Crear el archivo docker-compose.yml para Nginx Proxy Manager
 echo -e "${GREEN}Creando el archivo docker-compose.yml para Nginx Proxy Manager...${NC}"
 DOCKER_COMPOSE_DIR="/root/nginx-proxy-manager"
