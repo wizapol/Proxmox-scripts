@@ -130,12 +130,23 @@ while true; do
 done
 
 # Confirmar puerto para Firefly III
-read -p "El puerto por defecto para Firefly III es 8200. ¿Desea cambiarlo? [y/N]: " yn
-if [[ "$yn" =~ ^[Yy]$ ]]; then
-  read -p "Introduzca el nuevo puerto para Firefly III: " NEW_PORT
-else
-  NEW_PORT=8200
-fi
+while true; do
+  read -p "El puerto por defecto para Firefly III es 8200. ¿Desea cambiarlo? [y/N]: " yn
+  if [[ "$yn" =~ ^[Yy]$ ]]; then
+    while true; do
+      read -p "Introduzca el nuevo puerto para Firefly III: " NEW_PORT
+      if [[ "$NEW_PORT" =~ ^[0-9]+$ ]] && [ "$NEW_PORT" -ge 1024 ] && [ "$NEW_PORT" -le 65535 ]; then
+        break 2  # Salir de ambos bucles while
+      else
+        echo -e "${RED}Por favor, introduzca un número de puerto válido (1024-65535).${NC}"
+      fi
+    done
+  else
+    NEW_PORT=8200
+    break  # Salir del bucle while externo
+  fi
+done
+
 # Crear el contenedor en local-lvm
 echo "Creando el contenedor en local-lvm..."
 pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
@@ -225,10 +236,14 @@ else
   echo -e "${RED}Error al actualizar el puerto. Abortando.${NC}"
   exit 1
 fi
-# Iniciar Firefly III
 
-echo -e "${GREEN}Iniciando Firefly III...${NC}"
+# Iniciar Firefly III
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
+
+if [ $? -ne 0 ]; then
+  echo -e "${RED}Error al iniciar los contenedores. Verifique los logs para más detalles.${NC}"
+  exit 1
+fi
 
 # Añadir tag al contenedor
 pct set $VMID -tags "administracion"
