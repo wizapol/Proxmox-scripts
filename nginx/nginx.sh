@@ -108,7 +108,16 @@ if [ $? -ne 0 ]; then
 fi
 
 # Esperar a que el contenedor se inicie completamente
-sleep 15
+sleep 10
+
+# Instalar Bash en el contenedor
+echo "Instalando Bash en el contenedor..."
+pct exec $VMID -- apk add bash
+
+if [ $? -ne 0 ]; then
+  echo -e "${RED}Error al instalar Bash. Abortando.${NC}"
+  exit 1
+fi
 
 # Instalar Docker y Docker Compose
 pct exec $VMID -- bash -c "apk add docker docker-compose"
