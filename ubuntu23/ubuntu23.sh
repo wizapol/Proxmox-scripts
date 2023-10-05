@@ -70,6 +70,10 @@ PASSWORD_CONFIRM=""
 DB_PASSWORD=""
 DB_PASSWORD_CONFIRM=""
 
+# Confirmar HOSTNAME para el contenedor
+read -p "Introduzca el nombre del HOSTNAME para el contenedor: " HOSTNAME
+
+
 # Confirmar contraseña para el contenedor
 while true; do
   read -s -p "Introduzca la contraseña para el contenedor: " PASSWORD
@@ -120,7 +124,7 @@ done
 # Crear el contenedor en local-lvm
 echo "Creando el contenedor en local-lvm..."
 pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
-  --hostname firefly-iii \
+  --hostname $HOSTNAME \
   --password $PASSWORD \
   --unprivileged 1 \
   --net0 name=eth0,bridge=vmbr0,ip=$STATIC_IP \
@@ -143,7 +147,7 @@ if [ $? -ne 0 ]; then
       # Intentar crear el contenedor de nuevo
       echo -e "${GREEN}Creando el contenedor en local-lvm...${NC}"
       pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
-        --hostname firefly-iii \
+        --hostname $HOSTNAME \
         --password $PASSWORD \
         --unprivileged 1 \
         --net0 name=eth0,bridge=vmbr0,ip=$STATIC_IP \
