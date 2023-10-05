@@ -108,7 +108,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Esperar a que el contenedor se inicie completamente
-sleep 10
+sleep 15
 
 # Instalar Docker y Docker Compose
 pct exec $VMID -- bash -c "apk add docker docker-compose"
