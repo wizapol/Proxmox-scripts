@@ -41,7 +41,7 @@ while true; do
       break
       ;;
     * ) 
-      read -p "Introduzca un ID de VM/CT: " VMID
+      read -p "Introduzca un ID valido de VM/CT: " VMID
       # Verificar si el ID ya está en uso
       if pct list | awk '{print $1}' | grep -q "^${VMID}$"; then
         echo -e "${RED}Este ID ya está en uso. Por favor, elija otro.${NC}"
