@@ -44,11 +44,25 @@ NEXTID=$(pvesh get /cluster/nextid)
 echo -e "${GREEN}El próximo ID de VM/CT disponible es: $NEXTID${NC}"
 
 # Preguntar al usuario para confirmar
-read -p "¿Desea continuar con este ID? [y/N]: " yn
-case $yn in
-  [Yy]* ) VMID=$NEXTID;;
-  * ) read -p "Introduzca un ID de VM/CT: " VMID;;
-esac
+while true; do
+  read -p "¿Desea continuar con este ID? [y/N]: " yn
+  case $yn in
+    [Yy]* ) 
+      VMID=$NEXTID
+      break
+      ;;
+    * ) 
+      read -p "Introduzca un ID valido de VM/CT: " VMID
+      # Verificar si el ID ya está en uso
+      if pct list | awk '{print $1}' | grep -q "^${VMID}$"; then
+        echo -e "${RED}Este ID ya está en uso. Por favor, elija otro.${NC}"
+      else
+        break
+      fi
+      ;;
+  esac
+done
+
 
 # Inicialización de variables
 PASSWORD=""
