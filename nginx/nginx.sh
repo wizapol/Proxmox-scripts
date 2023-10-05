@@ -219,34 +219,19 @@ sleep 10
 echo -e "${GREEN}Actualizando OS...${NC}"
 pct exec $VMID -- bash -c "apt update && apt upgrade -y"
 
-echo "-------------------------------------"
-echo "Resumen de la instalación:"
-echo "ID del contenedor: $VMID"
-echo "Nombre del Contenedor: $HOSTNAME"
-echo "OS: Ubuntu 23.04"
-echo "Contraseña CT: $PASSWORD"
-echo "CPU: $CPU"
-echo "RAM: ${RAM}MB"
-echo "STORAGE: $STORAGE"
-echo "Network: $STATIC_IP"
-echo "Email: admin@example.com"
-echo "Password: changeme"
-
-echo "-------------------------------------"
-
 # Instalar docker y docker-compose
 echo -e "${GREEN}Instalando Docker y Docker-Compose...${NC}"
-if pct exec $VMID -- bash -c "apt install docker docker-compose -y"
+if pct exec $VMID -- bash -c "apt install docker docker-compose -y"; then
   echo -e "${GREEN}Instalacion de Docker y Docker-compose Complete.${NC}"
 else
   echo -e "${RED}Error al Instalar Docker y Docker-compose. Abortando.${NC}"
   exit 1
 fi
 
-# Descargar el archivo docker-compose.yml de Firefly III
+# Descargar el archivo docker-compose.yml de Nginx Proxy Manager
 echo "Descargando el archivo docker-compose.yml para Nginx Proxy Manager..."
 DOCKER_COMPOSE_DIR="/root/nginx-proxy-manager"
-if pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/nginx/env/docker-compose.yml"
+if pct exec $VMID -- bash -c "mkdir -p $DOCKER_COMPOSE_DIR && cd $DOCKER_COMPOSE_DIR && wget https://raw.githubusercontent.com/wizapol/Proxmox-scripts/main/nginx/env/docker-compose.yml"; then
   echo -e "${GREEN}Descarga de docker-compose.yml para Nginx Proxy Manager Completa.${NC}"
 else
   echo -e "${RED}Error al descargar el archivo. Abortando.${NC}"
@@ -263,7 +248,7 @@ fi
 
 # Instalar Nginx Proxy Manager
 echo -e "${GREEN}Instalando Nginx Proxy Manager...${NC}"
-if pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
+if pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"; then
   echo -e "${GREEN}Instalacion de Nginx Proxy Manager Complete.${NC}"
 else
   echo -e "${RED}Error al Instalar Nginx Proxy Manager. Abortando.${NC}"
@@ -281,4 +266,17 @@ pct set $VMID -description "$RESUMEN"
 
 # Final del script
 echo -e "${GREEN}La instalación se ha completado con éxito.${NC}"
+echo "-------------------------------------"
+echo "Resumen de la instalación:"
+echo "ID del contenedor: $VMID"
+echo "Nombre del Contenedor: $HOSTNAME"
+echo "OS: Ubuntu 23.04"
+echo "Contraseña CT: $PASSWORD"
+echo "CPU: $CPU"
+echo "RAM: ${RAM}MB"
+echo "STORAGE: $STORAGE"
+echo "Network: $STATIC_IP"
+echo "Email: admin@example.com"
+echo "Password: changeme"
+echo "-------------------------------------"
 INSTALL_SUCCESS="true"
