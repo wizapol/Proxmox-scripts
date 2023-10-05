@@ -9,17 +9,22 @@ NC='\033[0m' # No Color
 function header_info {
   clear
   echo -e "${GREEN}"
-  echo " _____ _          _____ _         ___ ___ ___  "
-  echo "|  ___(_)_ __ ___|  ___| |_   _  |_ _|_ _|_ _| "
-  echo "| |_  | | '__/ _ \\ |_  | | | | |  | | | | | |  "
-  echo "|  _| | | | |  __/  _| | | |_| |  | | | | | |  "
-  echo "|_|   |_|_|  \\___|_|   |_|\\__, | |___|___|___| "
-  echo "                          |___/                "
   echo "---------------------------------------------------"
   echo "  Instalador de Firefly III en Proxmox by wizapol"
   echo "---------------------------------------------------"
   echo -e "${NC}"
 }
+
+# Función de limpieza
+function cleanup {
+  if [ -n "$VMID" ]; then
+    echo -e "${RED}Ocurrió un error. Eliminando la VM con ID $VMID...${NC}"
+    pct destroy $VMID
+  fi
+}
+
+# Registrar la función de limpieza para ejecutarse al salir del script
+trap cleanup EXIT
 
 header_info
 
@@ -58,7 +63,6 @@ while true; do
     echo -e "${RED}Las contraseñas no coinciden. Inténtelo de nuevo.${NC}"
   fi
 done
-
 # Confirmar contraseña para la base de datos
 while true; do
   read -s -p "Introduzca la contraseña para la base de datos: " DB_PASSWORD
@@ -105,7 +109,6 @@ if [[ "$yn" =~ ^[Yy]$ ]]; then
 else
   NEW_PORT=8200
 fi
-
 # Crear el contenedor en local-lvm
 echo "Creando el contenedor en local-lvm..."
 pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
@@ -160,7 +163,6 @@ sleep 10
 
 # Instalar Docker y Docker Compose
 pct exec $VMID -- bash -c "apt update && apt install -y docker.io docker-compose git"
-
 # Descargar el archivo docker-compose.yml de Firefly III
 echo "Descargando el archivo docker-compose.yml de Firefly III..."
 DOCKER_COMPOSE_DIR="/root/firefly"
@@ -192,7 +194,6 @@ else
   echo -e "${RED}Error al actualizar el puerto. Abortando.${NC}"
   exit 1
 fi
-
 # Iniciar Firefly III
 pct exec $VMID -- bash -c "cd $DOCKER_COMPOSE_DIR && docker-compose up -d"
 
@@ -241,3 +242,4 @@ if [[ "$yn" =~ ^[Yy]$ ]]; then
 else
   echo "El contenedor no se configurará para iniciar automáticamente."
 fi
+
