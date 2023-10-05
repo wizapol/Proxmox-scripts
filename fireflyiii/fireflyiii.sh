@@ -96,12 +96,12 @@ while true; do
 done
 
 # Configuración de recursos de VM
-read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 512MB RAM, 1GB de almacenamiento)? [y/N]: " yn
+read -p "¿Desea usar la configuración de recursos por defecto (1 CPU, 512MB RAM, 3GB de almacenamiento)? [y/N]: " yn
 case $yn in
   [Yy]* ) 
     CPU=1
     RAM=512
-    STORAGE=1024  # 1GB en MB
+    STORAGE=3072
     ;;
   * ) 
     read -p "Introduzca el número de CPUs: " CPU
@@ -146,7 +146,7 @@ pct create $VMID local:vztmpl/ubuntu-23.04-standard_23.04-1_amd64.tar.zst \
   --cores $CPU \
   --memory $RAM \
   --storage local-lvm \
-  --rootfs local-lvm:2
+  --rootfs local-lvm:${STORAGE}
 
 if [ $? -ne 0 ]; then
   echo -e "${RED}Error al crear el contenedor. La imagen de Ubuntu no se encuentra disponible.${NC}"
@@ -169,7 +169,7 @@ if [ $? -ne 0 ]; then
         --cores $CPU \
         --memory $RAM \
         --storage local-lvm
-        --rootfs local-lvm:2
+        --rootfs local-lvm:${STORAGE}
       if [ $? -ne 0 ]; then
         echo -e "${RED}Error al crear el contenedor incluso después de descargar la imagen de Ubuntu. Abortando.${NC}"
         exit 1
