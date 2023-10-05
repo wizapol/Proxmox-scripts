@@ -65,7 +65,6 @@ pct create $VMID local:vztmpl/alpine-3.18-default_20230607_amd64.tar.xz \
   --net0 name=eth0,bridge=vmbr0,ip=dhcp \
   --cores 1 \
   --memory 1024 \
-  --rootfs local-lvm:1 \
   --storage local-lvm
 
 if [ $? -ne 0 ]; then
@@ -89,6 +88,7 @@ if [ $? -ne 0 ]; then
         --net0 name=eth0,bridge=vmbr0,ip=dhcp \
         --cores 1 \
         --memory 1 \
+        --rootfs local-lvm:1 \
         --storage local-lvm
       if [ $? -ne 0 ]; then
         echo -e "${RED}Error al crear el contenedor incluso después de descargar la imagen de Alpine. Abortando.${NC}"
