@@ -287,6 +287,6 @@ fi
 
 # Final del script
 echo -e "${GREEN}La instalación se ha completado con éxito.${NC}"
-INSTALL_SUCCESS=false
+INSTALL_SUCCESS=true
 
 
